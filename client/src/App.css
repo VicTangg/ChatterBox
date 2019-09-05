@@ -1,0 +1,10 @@
+html, body, #root, #app, #app>div {
+  height: 100%
+}
+
+li.borderless {
+  border-top: 0 none;
+  border-left: 0 none;
+  border-right: 0 none;
+  border-bottom: 0 none;
+}
