@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
 // DB Config
-const db_uri;
+var db_uri;
 if (process.env.NODE_ENV === 'production') {
   db_uri = process.env.mongoURI;
 } else {
