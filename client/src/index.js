@@ -133,7 +133,8 @@ class FriendConversationPage extends React.Component {
       conversations: null,
       friendIcon: null,
       messageToSend: "",
-      sentMessages: []
+      sentMessages: [],
+      deletedMessageIds: []
     };
 
     this.deleteMessage = this.deleteMessage.bind(this);
@@ -240,7 +241,7 @@ class FriendConversationPage extends React.Component {
           console.log(response);
           if (response.data.id) {
             // To be implement
-            
+            console.log("Message has been created")
             var newSentMessages = this.state.sentMessages
 
             newSentMessages.push({
@@ -268,9 +269,21 @@ class FriendConversationPage extends React.Component {
   }
 
   deleteMessage(e) {
-    const id = e.target.id;
+    const id = e.currentTarget.id;
     console.log('Double click event has been received!')
-    console.log(id==="")
+    console.log(id)
+    axios.delete('deletemessage/' + id).then(response => {
+      console.log(response.data)
+      if (response.data === "Message is successfully deleted") {
+        console.log("Message has been deleted")
+        var newDeletedMessageIds = this.state.deletedMessageIds
+        newDeletedMessageIds.push(id)
+        this.setState({
+          deletedMessageIds: newDeletedMessageIds
+        })
+      }
+    })
+
   }
 
   render() {
@@ -281,7 +294,8 @@ class FriendConversationPage extends React.Component {
       const messages = this.state.conversations.messages
       var sentMessages = this.state.sentMessages
 
-
+      console.log("Logging Messages here")
+      console.log(messages)
       messages.slice().reverse().concat(sentMessages).forEach((message) => {
         if (message.date !== date) {
           // Insert Date row 
@@ -297,8 +311,7 @@ class FriendConversationPage extends React.Component {
         if (message.senderId === this.props.clickedFriendId) {
           // Friend's message
           messageRows.push(
-            <Row key={message._id} id={message._id} onDoubleClick={(e) => {
-              if (window.confirm('Are you sure you wish to delete this message?')) this.deleteMessage(e)}}
+            <Row key={message._id} id={message._id} onDoubleClick={(e) => this.deleteMessage(e)}
             >
               <Col align='left' xs="6" sm="4">
                 <p>
@@ -314,7 +327,9 @@ class FriendConversationPage extends React.Component {
               </Col>
             </Row>
           )
-        } else if (message.senderId === this.props.userData.id) {
+        } else if ( message.senderId === this.props.userData.id && 
+                    !this.state.deletedMessageIds.includes(message._id)) 
+        {
           // User's message
           messageRows.push(
             <Row key={message._id} id={message._id} onDoubleClick={(e) => {
