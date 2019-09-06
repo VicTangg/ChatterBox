@@ -229,11 +229,11 @@ class FriendConversationPage extends React.Component {
         this.setState({processing: true})
 
         var date_object = new Date()
-        var date = date_object.toString().slice(0, 15);
+        var date = date_object.toISOString();
         var time = date_object.toString().slice(15, 25);
         let data = {
           "message": this.state.messageToSend,
-          "date": date ,
+          "date": date,
           "time": time
         }  
 
@@ -297,6 +297,7 @@ class FriendConversationPage extends React.Component {
       console.log("Logging Messages here")
       console.log(messages)
       messages.slice().reverse().concat(sentMessages).forEach((message) => {
+        // Create a date handler
         if (message.date !== date) {
           // Insert Date row 
           messageRows.push(
