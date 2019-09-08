@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
-import uuid from 'uuid'
+import uuid from 'uuid';
+import moment from 'moment';
 
 import { Alert, Container, Row, Col} from 'reactstrap';
 import { Button, Form, FormGroup, Label, InputGroup, Input } from 'reactstrap';
@@ -298,16 +299,20 @@ class FriendConversationPage extends React.Component {
       console.log(messages)
       messages.slice().reverse().concat(sentMessages).forEach((message) => {
         // Create a date handler
-        if (message.date !== date) {
+        var message_date = moment(message.date).format('MMM DD, YYYY')
+        var message_time = moment(message.date).format('hh:mm a')
+        console.log(message.date)
+
+        if (message_date !== date) {
           // Insert Date row 
           messageRows.push(
             <Row key={uuid.v4()}>
               <Col align='center'>
-                <h5>{message.date}</h5>
+                <h5>{message_date}</h5>
               </Col>
             </Row>
           )
-          date = message.date
+          date = message_date
         }
         if (message.senderId === this.props.clickedFriendId) {
           // Friend's message
@@ -324,7 +329,7 @@ class FriendConversationPage extends React.Component {
                 <p></p>
               </Col>
               <Col align='right' sm="4">
-                {message.time}
+                {message_time}
               </Col>
             </Row>
           )
@@ -344,7 +349,7 @@ class FriendConversationPage extends React.Component {
                 <p>{message.message}</p>
               </Col>
               <Col align='right' sm="4">
-                {message.time}
+                {message_time}
               </Col>
             </Row>
           )
