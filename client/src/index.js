@@ -134,7 +134,7 @@ class FriendConversationPage extends React.Component {
       conversations: null,
       friendIcon: null,
       messageToSend: "",
-      sentMessages: [],
+      newMessages: [],
       deletedMessageIds: []
     };
 
@@ -148,7 +148,7 @@ class FriendConversationPage extends React.Component {
     if (this.props.clickedFriendId !== prevProps.clickedFriendId) {
       this.setState({
         isLoading: true,
-        sentMessages: []
+        newMessages: []
       })
       axios
       .get('getconversation/' + this.props.clickedFriendId)
@@ -211,9 +211,44 @@ class FriendConversationPage extends React.Component {
           this.setState({ friendIcon: "data:;base64," + base64 });
           console.log('This is called on initial loading')
           console.log(this.state.conversations)
+
+          this.interval = setInterval(
+            () => this.getNewMessages(), 3000
+          );
         });
       }
     });
+  }
+
+  getNewMessages() {
+    console.log('Fetching new message from', this.state.conversations.friend_name)
+    axios.get('getnewmessages/' + this.props.clickedFriendId).then(response => {
+      if (response.data.newMessages) {
+        var updatedNewMessages = this.state.newMessages
+
+        var newMessages = response.data.newMessages
+        console.log(newMessages)
+
+        newMessages.forEach((message) => {
+          updatedNewMessages.push({
+            _id: message._id,
+            message: message.message,
+            date: message.date,
+            time: message.time,
+            senderId: message.senderId,
+            receiverId: message.receiverId
+          })  
+        })
+
+        this.setState({
+          newMessages: updatedNewMessages,
+        })    
+      }
+    })
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
   }
 
   handleChange(e) {
@@ -243,9 +278,9 @@ class FriendConversationPage extends React.Component {
           if (response.data.id) {
             // To be implement
             console.log("Message has been created")
-            var newSentMessages = this.state.sentMessages
+            var updatedNewMessages = this.state.newMessages
 
-            newSentMessages.push({
+            updatedNewMessages.push({
               _id: response.data.id,
               message: response.data.message,
               date: date,
@@ -255,7 +290,7 @@ class FriendConversationPage extends React.Component {
             })
   
             this.setState({
-              sentMessages: newSentMessages,
+              newMessages: updatedNewMessages,
               messageToSend: '',
               processing: false
             })    
@@ -293,15 +328,12 @@ class FriendConversationPage extends React.Component {
       var messageRows = []
       var date = null
       const messages = this.state.conversations.messages
-      var sentMessages = this.state.sentMessages
+      var newMessages = this.state.newMessages
 
-      console.log("Logging Messages here")
-      console.log(messages)
-      messages.slice().reverse().concat(sentMessages).forEach((message) => {
+      messages.slice().reverse().concat(newMessages).forEach((message) => {
         // Create a date handler
         var message_date = moment(message.date).format('MMM DD, YYYY')
         var message_time = moment(message.date).format('hh:mm a')
-        console.log(message.date)
 
         if (message_date !== date) {
           // Insert Date row 
@@ -357,7 +389,7 @@ class FriendConversationPage extends React.Component {
       })
 
       console.log('Render function is called')
-      console.log(messageRows)
+      console.log(messageRows.length)
 
       return(
         <Container>
