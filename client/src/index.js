@@ -133,9 +133,11 @@ class FriendConversationPage extends React.Component {
       isLoading: true,
       conversations: null,
       friendIcon: null,
+      friendStatus: null,
       messageToSend: "",
       newMessages: [],
-      deletedMessageIds: []
+      deletedMessageIds: [],
+      allMessageIdsFromFriend: []
     };
 
     this.deleteMessage = this.deleteMessage.bind(this);
@@ -155,6 +157,7 @@ class FriendConversationPage extends React.Component {
       .then(response => {
         if (response.data) {
           this.setState({
+            friendStatus: response.data.friend_status,
             conversations: response.data,
             isLoading: false
           })
@@ -189,7 +192,17 @@ class FriendConversationPage extends React.Component {
     .get('getconversation/' + this.props.clickedFriendId)
     .then(response => {
       if (response.data) {
+        // Initially set allMessageIdsFromFriend
+        var messages = response.data.messages
+        var allMessageIdsFromFriend = []
+
+        messages.forEach(message => {
+          allMessageIdsFromFriend.push(message._id)
+        })
+
         this.setState({
+          allMessageIdsFromFriend: allMessageIdsFromFriend,
+          friendStatus: response.data.friend_status,
           conversations: response.data,
           isLoading: false,
           processing: false
@@ -227,6 +240,8 @@ class FriendConversationPage extends React.Component {
         var updatedNewMessages = this.state.newMessages
 
         var newMessages = response.data.newMessages
+        var allMessageIdsFromFriend = response.data.allMessageIds
+
         console.log(newMessages)
 
         newMessages.forEach((message) => {
@@ -241,7 +256,9 @@ class FriendConversationPage extends React.Component {
         })
 
         this.setState({
+          friendStatus: response.data.friendStatus,
           newMessages: updatedNewMessages,
+          allMessageIdsFromFriend: allMessageIdsFromFriend
         })    
       }
     })
@@ -346,7 +363,12 @@ class FriendConversationPage extends React.Component {
           )
           date = message_date
         }
-        if (message.senderId === this.props.clickedFriendId) {
+
+        console.log('debug starts here')
+        console.log(this.state.allMessageIdsFromFriend)
+        if (message.senderId === this.props.clickedFriendId &&
+            this.state.allMessageIdsFromFriend.includes(message._id)) 
+        {
           // Friend's message
           messageRows.push(
             <Row key={message._id} id={message._id} onDoubleClick={(e) => this.deleteMessage(e)}
@@ -388,9 +410,6 @@ class FriendConversationPage extends React.Component {
         }
       })
 
-      console.log('Render function is called')
-      console.log(messageRows.length)
-
       return(
         <Container>
           <div>
@@ -398,7 +417,7 @@ class FriendConversationPage extends React.Component {
               <Col>
                 <h4 style={{'background': '#DDF6F5'}}>
                   <img height="42" width="42" src={this.state.friendIcon} alt="No icon"/>
-                  {this.state.conversations.friend_name}({this.state.conversations.friend_status})
+                  {this.state.conversations.friend_name}({this.state.friendStatus})
                 </h4>
               </Col>
             </Row>
