@@ -234,7 +234,6 @@ class FriendConversationPage extends React.Component {
   }
 
   getNewMessages() {
-    console.log('Fetching new message from', this.state.conversations.friend_name)
     axios.get('getnewmessages/' + this.props.clickedFriendId).then(response => {
       if (response.data.newMessages) {
         var updatedNewMessages = this.state.newMessages
@@ -242,7 +241,6 @@ class FriendConversationPage extends React.Component {
         var newMessages = response.data.newMessages
         var allMessageIdsFromFriend = response.data.allMessageIds
 
-        console.log(newMessages)
 
         newMessages.forEach((message) => {
           updatedNewMessages.push({
@@ -364,8 +362,6 @@ class FriendConversationPage extends React.Component {
           date = message_date
         }
 
-        console.log('debug starts here')
-        console.log(this.state.allMessageIdsFromFriend)
         if (message.senderId === this.props.clickedFriendId &&
             this.state.allMessageIdsFromFriend.includes(message._id)) 
         {
@@ -507,6 +503,42 @@ class LoginPage extends React.Component {
     };
   }
 
+  guestLogin(e) {
+    if (this.state.processing) {
+      return;
+    } else {
+      this.setState({processing: true})
+
+      // Login as guest depending on button clicked
+      let data;
+      if (e.target.id === 'guest1') {
+        data = {
+          "username": 'guest1',
+          "password": '12345678'
+        }    
+      } else if (e.target.id === 'guest2') {
+        data = {
+          "username": 'guest2',
+          "password": '12345678'
+        }    
+      }
+
+      axios.post('login', data).then(response => {
+        console.log(response);
+        if (response.data.id) {
+          this.setState({processing: false})
+          this.props.goToMainPage(response.data);
+        } else {
+          this.setState({
+            processing: false,
+            failedAttempt: true
+          })
+        }
+      })  
+
+    }    
+  }
+
   login(e) {
     if (this.state.processing) {
       return;
@@ -570,7 +602,9 @@ class LoginPage extends React.Component {
                             value={this.props.password} onChange={ (e) => {this.handlePasswordChange(e)}}
                           />
                         </FormGroup>
-                        <Button onClick={() => {this.login()}}>Sign in</Button>
+                        <Button onClick={() => {this.login()}}>Sign in</Button><br/><br/>
+                        <Button id="guest1" color="primary" onClick={(e) => {this.guestLogin(e)}}>Continues as Guest 1</Button>{' '}
+                        <Button id="guest2" color="info" onClick={(e) => {this.guestLogin(e)}}>Continues as Guest 2</Button>{' '}
                       </Col>
                     </Row>
                   </Form>
