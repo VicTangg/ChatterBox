@@ -106,10 +106,10 @@ router.post('/login', upload.array(), (req, res) => {
             return;
           });
         } else {
-          res.json('Login failure')
+          res.json('Wrong Password')
         }
       } else {
-        res.json('Login failure')
+        res.json('User not found')
       }
     })
     .catch(err => res.status(404).json({success: false}));
